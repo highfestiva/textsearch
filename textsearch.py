@@ -3,10 +3,10 @@
 from codecs import open
 from os import listdir,stat
 from os.path import join as pathjoin,isfile,isdir,splitext
-from sys import argv
+from sys import argv,stderr
 
 excludedirs = set('.git .svn __pycache__'.split())
-excludeexts = set('.exe .bin .png .jpg .gif .jar .pyc .pyo .pyd .whl .class .war .dll .zip .7z .gz .ttf .afm .eot'.split())
+excludeexts = set('.exe .bin .png .jpg .gif .tga .ppm .ico .icns .psd .wav .mp3 .ttf .afm .eot .zip .7z .gz .jar .pyc .pyo .pyd .whl .class .war .dll .obj .pch .pdb .ilk .suo'.split())
 maxfilesize = 1024*1024
 
 search = ' '.join(argv[1:])
@@ -18,22 +18,24 @@ def walkdir(root):
 	files = set(files) - excludedirs
 	files = [f for f in files if splitext(f)[1] not in excludeexts]
 	files = [pathjoin(root, f) for f in files]
-	dirs,files = [f for f in files if isdir(f)],[f for f in files if isfile(f)]
-	#print(dirs, files)
+	dirs,files = [f for f in files if isdir(f)],[f.replace('\\','/') for f in files if isfile(f)]
 	for f in files:
 		if stat(f).st_size > maxfilesize:
 			continue
 		try:
+			if i%877:
+				print(f[:79].ljust(79),end='\r',file=stderr)
+			i += 1
 			with open(f, encoding='ascii', errors='ignore') as r:
 				data = r.read()
-				index = data.index(search)
-				found = '.'.join(data[index-10:index+len(search)+20].split())
-				print('%s: %s' % (f.replace('\\','/'), found))
-			if i%877:
-				print('/-\|'[i%4],end='\r')
-			i += 1
+				while True:
+					index = data.index(search)
+					found = ' '.join(data[index-10:index+len(search)+20].split())
+					print('%s: %s' % (f, found))
+					data = data[index+1:]
 		except:
 			pass
 	for d in dirs:
 		walkdir(d)
 walkdir('.')
+print(end=' '*79+'\r',file=stderr)
