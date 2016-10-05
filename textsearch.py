@@ -28,7 +28,7 @@ def walkdir(root):
 				data = r.read()
 				index = data.index(search)
 				found = '.'.join(data[index-10:index+len(search)+20].split())
-				print('%s: %s' % (f, found))
+				print('%s: %s' % (f.replace('\\','/'), found))
 			if i%877:
 				print('/-\|'[i%4],end='\r')
 			i += 1
