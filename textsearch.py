@@ -8,7 +8,7 @@ excludedirs = set('.git .svn __pycache__'.split())
 excludeexts = set('.exe .bin .png .jpg .gif .tga .ppm .ico .icns .psd .wav .mp3 .ttf .afm .eot .zip .7z .gz .jar .pyc .pyo .pyd .whl .class .war .dll .obj .pch .pdb .ilk .suo'.split())
 maxfilesize = 1024*1024
 
-tostr = lambda b: b.decode('ascii','ignore')
+tostr = lambda b: b.decode('utf8','ignore')
 
 search = ' '.join(argv[1:]).encode()
 print('Text searching for "%s"...' % tostr(search))
@@ -24,7 +24,7 @@ def walkdir(root):
 		if stat(f).st_size > maxfilesize:
 			continue
 		try:
-			if not i&0x3ff:
+			if not i&0x7f:
 				print(f[:79].ljust(79),end='\r',file=stderr)
 			i += 1
 			with open(f, 'rb') as r:
