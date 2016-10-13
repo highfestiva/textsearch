@@ -13,7 +13,7 @@ case_insensitive,argv = '--case-insensitive' in argv, [a for a in argv if a!='--
 tosearch = (lambda a: a.lower()) if case_insensitive else (lambda a: a.encode())
 todata = (lambda a: a.decode('utf8').lower()) if case_insensitive else (lambda a: a)
 toprint = (lambda a: a) if case_insensitive else (lambda a: a.decode('utf8','ignore'))
-bin2string = lambda b: b.__str__()[2:-1]
+bin2string = lambda b: b.__str__()[2:-1].lower()
 
 search = tosearch(' '.join(argv[1:]))
 print('Text searching for "%a"...' % toprint(search))
