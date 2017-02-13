@@ -2,7 +2,7 @@
 
 from os import listdir,stat
 from os.path import join as pathjoin,isfile,isdir,splitext
-from sys import argv,stderr
+from sys import argv,stderr,exit
 
 excludedirs = set('.git .svn __pycache__'.split())
 excludeexts = set('.exe .bin .png .jpg .gif .tga .ppm .ico .icns .psd .wav .mp3 .ttf .afm .eot .zip .7z .gz .jar .pyc .pyo .pyd .whl .class .war .dll .obj .pch .pdb .ilk .suo'.split())
@@ -16,6 +16,8 @@ toprint = (lambda a: a) if case_insensitive else (lambda a: a.decode('utf8','ign
 bin2string = lambda b: b.__str__()[2:-1].lower()
 
 search = tosearch(' '.join(argv[1:]))
+if not search:
+	exit()
 print('Text searching for "%a"...' % toprint(search))
 i = 0
 def walkdir(root):
