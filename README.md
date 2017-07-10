@@ -1,7 +1,6 @@
 # textsearch
 
-A no-nonsense text search with ok defaults. The way Windows Explorer search should have been. Use
-`pip install pyinstaller` to build your own distributable .exe, or use the bundled one.
+A no-nonsense text search with ok defaults. The way Windows Explorer search should have been.
 
 ## Usage
 
