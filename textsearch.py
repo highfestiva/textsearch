@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import multiprocessing as mp
 import os
 from os.path import join as pathjoin
+import stackless
 from sys import argv,stderr
 
 
@@ -25,7 +25,7 @@ if not search:
 
 def search_thread_entry(workq, resq):
     while True:
-        f,size = workq.get()
+        f,size = workq.receive()
         if f == '*':
             break
         fd = os.open(f, os.O_BINARY|os.O_RDONLY)
@@ -40,13 +40,13 @@ def search_thread_entry(workq, resq):
             index = data.find(search, 0)
             while index >= 0:
                 found = ' '.join(toprint(data[index-10:index+len(search)+20]).split())
-                resq.put('%s: %s' % (f, found))
+                resq.send('%s: %s' % (f, found))
                 index = data.find(search, index+len(search))
 
 
 def print_thread_entry(resq):
     while True:
-        r = resq.get()
+        r = resq.receive()
         print(r)
 
 
@@ -62,22 +62,22 @@ def walkdir(root):
         if size > maxfilesize:
             continue
         filecnt += 1
-        workq.put((f,size))
+        workq.send((f,size))
     for d in dirs:
         walkdir(d)
 
 
 if __name__ == '__main__':
-    mp.freeze_support()
     filecnt = 0
-    workq = mp.Queue()
-    resq = mp.Queue()
-    search_procs = [mp.Process(target=search_thread_entry, args=(workq,resq)) for _ in range(3)]
-    print_proc = mp.Process(target=print_thread_entry, args=(resq,))
-    [p.start() for p in search_procs+[print_proc]]
+    workq = stackless.channel()
+    resq = stackless.channel()
+    search_tasks = [stackless.tasklet(search_thread_entry)(workq,resq) for _ in range(3)]
+    print_task = stackless.tasklet(print_thread_entry)(resq)
+    # [p.start() for p in search_tasks+[print_task]]
+    stackless.tasklet(walkdir)('.')
+    stackless.run()
 
-    walkdir('.')
-    [workq.put(('*',-1)) for _ in search_procs]
-    [p.join() for p in search_procs]
+    [workq.send(('*',-1)) for _ in search_tasks]
+    [p.join() for p in search_tasks]
     print('Searched %i files.' % filecnt, file=stderr)
     os._exit(0)
